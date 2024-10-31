@@ -18,6 +18,9 @@ func (s *Server) RegisterRoutes() http.Handler {
 }
 
 func (s *Server) HelloWorldHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	}
 
 	var dto dto.DtoCEP
 	err := json.NewDecoder(r.Body).Decode(&dto)
