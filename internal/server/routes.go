@@ -2,6 +2,7 @@ package server
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -36,10 +37,28 @@ func (s *Server) HelloWorldHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp := make(map[string]string)
-	resp["message"] = "Hello World"
+	var cepStr string
+	err = json.Unmarshal(dto.Cep, &cepStr)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
-	jsonResp, err := json.Marshal(resp)
+	urlTarget := fmt.Sprintf("http://service-b:8080/%s", cepStr)
+	response, err := http.Get(urlTarget)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	var respb pkg.ResponseDTO
+	err = json.NewDecoder(response.Body).Decode(&respb)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	jsonResp, err := json.Marshal(respb)
 	if err != nil {
 		log.Fatalf("error handling JSON marshal. Err: %v", err)
 	}
