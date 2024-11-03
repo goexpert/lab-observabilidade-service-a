@@ -1,0 +1,33 @@
+services:
+  service-a:
+    container_name: service_a
+    image: golang.1.22-arm64
+    ports:
+      - 8080:8080
+    environment:
+      - PORT=8080
+      - OTEL_RESOURCE_ATTRIBUTES="service.name=service-a,service.version=0.0.1"
+    volumes:
+      - /Users/rogeriotadim/git-projects/github/rogeriotadim/pos-goexpert/lab-observabilidade/service-a:/app
+    networks:
+      - lab-observabilidade
+  
+  service-b:
+    container_name: service_b
+    image: golang.1.22-arm64
+    ports:
+      - 8081:8080
+    environment:
+      - PORT=8080
+      - OTEL_RESOURCE_ATTRIBUTES="service.name=service-b,service.version=0.0.1"
+
+    volumes:
+      - /Users/rogeriotadim/git-projects/github/rogeriotadim/pos-goexpert/lab-observabilidade/service-b:/app
+    networks:
+      - lab-observabilidade
+
+networks:
+  lab-observabilidade:
+    driver: bridge
+
+

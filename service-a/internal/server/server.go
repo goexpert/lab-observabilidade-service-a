@@ -1,7 +1,9 @@
 package server
 
 import (
+	"context"
 	"fmt"
+	"net"
 	"net/http"
 	"os"
 	"strconv"
@@ -14,7 +16,7 @@ type Server struct {
 	port int
 }
 
-func NewServer() (*http.Server, error) {
+func NewServer(ctx context.Context) (*http.Server, error) {
 	port, err := strconv.Atoi(os.Getenv("PORT"))
 	if err != nil {
 		return nil, err
@@ -26,9 +28,10 @@ func NewServer() (*http.Server, error) {
 	// Declare Server config
 	server := &http.Server{
 		Addr:         fmt.Sprintf(":%d", NewServer.port),
+		BaseContext:  func(_ net.Listener) context.Context { return ctx },
 		Handler:      NewServer.RegisterRoutes(),
 		IdleTimeout:  time.Minute,
-		ReadTimeout:  10 * time.Second,
+		ReadTimeout:  2 * time.Second,
 		WriteTimeout: 30 * time.Second,
 	}
 

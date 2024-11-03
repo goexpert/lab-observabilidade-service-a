@@ -9,14 +9,25 @@ import (
 
 	"github.com/goexpert/lab-observabilidade-service-b/internal/dto"
 	"github.com/goexpert/lab-observabilidade-service-b/pkg"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
 func (s *Server) RegisterRoutes() http.Handler {
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/{cep}", s.GetTempByLocation)
+	// handleFunc is a replacement for mux.HandleFunc
+	// which enriches the handler's HTTP instrumentation with the pattern as the http.route.
+	handleFunc := func(pattern string, handlerFunc func(http.ResponseWriter, *http.Request)) {
+		// Configure the "http.route" for the HTTP instrumentation.
+		handler := otelhttp.WithRouteTag(pattern, http.HandlerFunc(handlerFunc))
+		mux.Handle(pattern, handler)
+	}
 
-	return mux
+	handleFunc("/{cep}", s.GetTempByLocation)
+
+	handler := otelhttp.NewHandler(mux, "/")
+
+	return handler
 }
 
 func (s *Server) GetTempByLocation(w http.ResponseWriter, r *http.Request) {
